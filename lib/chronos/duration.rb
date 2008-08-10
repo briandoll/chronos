@@ -186,8 +186,40 @@ module Chronos
 			Duration.new(@seconds, @months)
 		end
 		
+		# return the duration in the extended time format ex. hh:mm:ss
+    # parameters:
+		#   zero_pad_values: 
+		#       (true) will return "04" for 4
+		#   raise_error_on_large_duration: 
+		#       (true) throw exception if the duration is over 24h
+    def to_extended_time_format(zero_pad_values=true, 
+                                raise_error_on_large_duration=true)
+      if (raise_error_on_large_duration && (days.floor > 0))            
+        raise "Duration is too large to be expressed in extended time format"
+      end
+      
+      elements = [hours_after_days.floor, 
+                  minutes_after_hours.floor, 
+                  seconds_after_minutes.floor]
+                  
+      elements.delete_at 0 if elements[0] == 0 # remove hours if there are none
+      
+      if zero_pad_values
+        elements.map! do |count|
+          if count < 10
+            "0#{count}"
+          else
+            count
+          end
+        end
+      end
+      
+      elements.join(":")			
+    end
+		
 		# return a readable representation
 		def to_s(inner_zeros=true, leading_zeros=false)
+			return "" if seconds == 0
 			if @months == 0 then
 				elements = [
 					[weeks.floor, "weeks", "week"],
